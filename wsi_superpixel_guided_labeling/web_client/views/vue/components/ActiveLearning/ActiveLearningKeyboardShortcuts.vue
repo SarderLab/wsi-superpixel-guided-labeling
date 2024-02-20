@@ -238,7 +238,7 @@ export default Vue.extend({
 .h-hotkeys-container {
     z-index: 1000;
     position: absolute;
-    top: 5px;
+    top: 45px;
     left: 5px;
     padding: 5px;
     min-width: 250px;
