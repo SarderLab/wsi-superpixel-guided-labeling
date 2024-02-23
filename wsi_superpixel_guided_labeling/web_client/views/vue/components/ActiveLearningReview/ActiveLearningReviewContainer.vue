@@ -14,7 +14,8 @@ export default Vue.extend({
             groupedSuperpixels: [],
             groupBy: 0,
             sortBy: 0,
-            sortSuperpixelBy: 0
+            sortSuperpixelBy: 0,
+            filterBy: 0
         };
     },
     computed: {
@@ -38,12 +39,11 @@ export default Vue.extend({
         filterOptions() {
             const categories = _.map(this.categories, (cat) => cat.label);
             return [
-              'agree',
-              'disagree',
-              ...Object.keys(this.annotationsByImageId),
-              ...categories
+                'agree',
+                'disagree',
+                ...Object.keys(this.annotationsByImageId),
+                ...categories
             ];
-
         }
     },
     watch: {
@@ -94,6 +94,40 @@ export default Vue.extend({
                     break;
             }
             return sorted;
+        },
+        filterSuperpixels(data) {
+            if (this.filterBy === 'agree') {
+                return _.filter(data, (superpixel) => {
+                    const { selectedCategory, prediction } = superpixel;
+                    return selectedCategory === prediction;
+                });
+            }
+            if (this.filterBy === 'disagree') {
+                return _.filter(data, (superpixel) => {
+                    const { selectedCategory, prediction } = superpixel;
+                    return selectedCategory !== prediction;
+                });
+            }
+            if (this.filterBy in this.annotationsByImageId) {
+                return _.filter(data, (superpixel) => {
+                    return superpixel.imageId === this.filterBy;
+                });
+            }
+            const labels = _.map(this.categories, (category) => {
+                if (category.label !== 'default') {
+                    return category.label;
+                }
+            });
+            if (labels.includes(this.filterBy)) {
+                return _.filter(data, (superpixel) => {
+                    const { selectedCategory, predictionCategories } = superpixel;
+                    return predictionCategories[selectedCategory].label === this.filterBy;
+                });
+            }
+            return data;
+        },
+        filterAndSort(data) {
+            return this.sortSuperpixels(this.filterSuperpixels(data));
         },
         categoryColor(superpixel) {
             return this.categories[superpixel.selectedCategory].fillColor;
@@ -152,13 +186,19 @@ export default Vue.extend({
           <label for="filterby">Filter By</label>
           <select
             id="filterby"
+            v-model="filterBy"
             class="form-control input-sm"
           >
-            <option>-----</option>
-            <option>Author</option>
-            <option>Slide</option>
-            <option>Class</option>
-            <option>Agree/Disagree</option>
+            <option value="none">
+              -----
+            </option>
+            <option
+              v-for="item, index in filterOptions"
+              :key="index"
+              :value="item"
+            >
+              {{ item }}
+            </option>
           </select>
         </div>
         <div class="col-sm-3" />
@@ -204,7 +244,7 @@ export default Vue.extend({
         <hr>
         <div class="panel-content-cards">
           <active-learning-review-card
-            v-for="superpixel, index in sortSuperpixels(value)"
+            v-for="superpixel, index in filterAndSort(value)"
             :key="index"
             :style="[groupBy === 2 ? {'border': 'none'} : {'border-color': categoryColor(superpixel)}]"
             :superpixel="superpixel"
@@ -217,7 +257,7 @@ export default Vue.extend({
       class="panel-content panel-content-cards"
     >
       <active-learning-review-card
-        v-for="superpixel, index in sortSuperpixels(superpixelsForReview)"
+        v-for="superpixel, index in filterAndSort(superpixelsForReview)"
         :key="index"
         :style="{'border-color': categoryColor(superpixel)}"
         :superpixel="superpixel"
