@@ -1,6 +1,5 @@
 <script>
 import Vue from 'vue';
-import _ from 'underscore';
 
 import { store } from '../store';
 
@@ -14,9 +13,6 @@ export default Vue.extend({
     computed: {
         apiRoot() {
             return store.apiRoot;
-        },
-        categoryColor() {
-            return this.superpixel.labelCategories[this.superpixel.selectedCategory].fillColor;
         },
         wsiRegionUrl() {
             const imageId = this.superpixel.imageId;
@@ -61,10 +57,7 @@ export default Vue.extend({
 </script>
 
 <template>
-  <div
-    :style="{borderColor: categoryColor}"
-    class="h-superpixel-card"
-  >
+  <div class="h-superpixel-card">
     <button class="h-superpixel-region-button">
       <img :src="wsiRegionUrl">
       <img

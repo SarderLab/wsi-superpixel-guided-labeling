@@ -9,6 +9,12 @@ export default Vue.extend({
     components: {
         ActiveLearningReviewCard
     },
+    data() {
+        return {
+            groupedSuperpixels: [],
+            groupBy: 0
+        };
+    },
     computed: {
         predictionsData() {
             if (store.backboneParent) {
@@ -17,11 +23,54 @@ export default Vue.extend({
             return [];
         },
         superpixelsForReview() {
-            const sorted = _.sortBy(this.predictionsData, 'certainty');
-            return _.filter(sorted, (superpixel) => superpixel.agreeChoice !== undefined);
+            return _.filter(this.predictionsData, (superpixel) => {
+                return superpixel.agreeChoice !== undefined;
+            });
         },
-        rows() {
-            return _.range(Math.ceil(this.superpixelsForReview.length / 12));
+        annotationsByImageId() {
+            return store.annotationsByImageId;
+        },
+        categories() {
+            return store.categories;
+        },
+        filterOptions() {
+            const categories = _.map(this.categories, (cat) => cat.label);
+            return [
+              'agree',
+              'disagree',
+              ...Object.keys(this.annotationsByImageId),
+              ...categories
+            ];
+
+        }
+    },
+    watch: {
+        groupBy(selection) {
+            const sfr = this.superpixelsForReview;
+            switch (selection) {
+                case 1:
+                    // FIXME: Use image name instead of imageId
+                    this.groupedSuperpixels = _.groupBy(sfr, 'imageId');
+                    break;
+                case 2:
+                    this.groupedSuperpixels = _.groupBy(sfr, (superpixel) => {
+                        return this.categories[superpixel.selectedCategory].label;
+                    });
+                    break;
+                case 3:
+                    this.groupedSuperpixels = _.groupBy(sfr, (superpixel) => {
+                        const { selectedCategory, prediction } = superpixel;
+                        return selectedCategory === prediction ? 'Agree' : 'Disagree';
+                    });
+                    break;
+                default:
+                    this.groupedSuperpixels = [];
+            }
+        }
+    },
+    methods: {
+        categoryColor(superpixel) {
+            return this.categories[superpixel.selectedCategory].fillColor;
         }
     }
 });
@@ -35,14 +84,21 @@ export default Vue.extend({
           <label for="groupby">Group By</label>
           <select
             id="groupby"
+            v-model="groupBy"
             class="form-control input-sm"
           >
-            <option>-----</option>
-            <option>Annotator</option>
-            <option>Slide</option>
-            <option>Class</option>
-            <option>Agree</option>
-            <option>Disagree</option>
+            <option :value="0">
+              -----
+            </option>
+            <option :value="1">
+              Slide
+            </option>
+            <option :value="2">
+              Class
+            </option>
+            <option :value="3">
+              Agree/Disagree
+            </option>
           </select>
         </div>
         <div class="col-sm-2">
@@ -88,12 +144,43 @@ export default Vue.extend({
         </div>
       </div>
     </div>
-    <div class="panel-content">
+    <div
+      v-if="groupBy !== 0"
+      class="panel-content"
+    >
+      <div
+        v-for="[key, value] in Object.entries(groupedSuperpixels)"
+        :key="key"
+      >
+        <h4 :class="[groupBy === 2 && 'group-header']">
+          {{ key }} ({{ value.length }})
+          <i
+            v-if="groupBy === 2"
+            class="icon-blank"
+            :class="[groupBy === 2 && 'group-icon']"
+            :style="{'background-color': categoryColor(value[0])}"
+          />
+        </h4>
+        <hr>
+        <div class="panel-content-cards">
+          <active-learning-review-card
+            v-for="superpixel, index in value"
+            :key="index"
+            :style="[groupBy === 2 ? {'border': 'none'} : {'border-color': categoryColor(superpixel)}]"
+            :superpixel="superpixel"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      v-else
+      class="panel-content panel-content-cards"
+    >
       <active-learning-review-card
         v-for="superpixel, index in superpixelsForReview"
         :key="index"
+        :style="{'border-color': categoryColor(superpixel)}"
         :superpixel="superpixel"
-        sort-value="confidence"
       />
     </div>
   </div>
@@ -111,10 +198,24 @@ export default Vue.extend({
 }
 
 .panel-content {
+  height: 84vh;
+  overflow: scroll;
+}
+
+.panel-content-cards {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  max-height: 100vh;
-  overflow: scroll;
+  justify-content: flex-start;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+}
+
+.group-icon {
+  height: 20px;
+  width: 20px;
+  margin-left: 5px;
 }
 </style>
