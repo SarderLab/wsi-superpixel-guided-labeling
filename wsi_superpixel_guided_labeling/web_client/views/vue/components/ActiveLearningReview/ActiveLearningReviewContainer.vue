@@ -12,7 +12,9 @@ export default Vue.extend({
     data() {
         return {
             groupedSuperpixels: [],
-            groupBy: 0
+            groupBy: 0,
+            sortBy: 0,
+            sortSuperpixelBy: 0
         };
     },
     computed: {
@@ -69,6 +71,30 @@ export default Vue.extend({
         }
     },
     methods: {
+        sortSuperpixels(sorted) {
+            switch (this.sortSuperpixelBy) {
+                case 0:
+                    sorted = _.sortBy(sorted, 'confidence');
+                    break;
+                case 1:
+                    sorted = _.sortBy(sorted, 'certainty');
+                    break;
+            }
+            switch (this.sortBy) {
+                case 1:
+                    sorted = _.sortBy(sorted, 'imageId');
+                    break;
+                case 2:
+                    sorted = _.sortBy(sorted, 'selectedCategory');
+                    break;
+                case 3:
+                    sorted = _.sortBy(sorted, (superpixel) => {
+                        return superpixel.selectedCategory === superpixel.prediction;
+                    });
+                    break;
+            }
+            return sorted;
+        },
         categoryColor(superpixel) {
             return this.categories[superpixel.selectedCategory].fillColor;
         }
@@ -105,13 +131,21 @@ export default Vue.extend({
           <label for="sortby">Sort By</label>
           <select
             id="sortby"
+            v-model="sortBy"
             class="form-control input-sm"
           >
-            <option>-----</option>
-            <option>Author</option>
-            <option>Slide</option>
-            <option>Class</option>
-            <option>Agree/Disagree</option>
+            <option :value="0">
+              -----
+            </option>
+            <option :value="1">
+              Slide
+            </option>
+            <option :value="2">
+              Class
+            </option>
+            <option :value="3">
+              Agree/Disagree
+            </option>
           </select>
         </div>
         <div class="col-sm-2">
@@ -132,9 +166,15 @@ export default Vue.extend({
           <label for="superpixel">Superpixel Sort By</label>
           <select
             id="superpixel"
+            v-model="sortSuperpixelBy"
             class="form-control input-sm"
           >
-            <option>Confidence</option>
+            <option :value="0">
+              Confidence
+            </option>
+            <option :value="1">
+              Certainty
+            </option>
           </select>
         </div>
         <div class="h-form-buttons col-sm-1">
@@ -164,7 +204,7 @@ export default Vue.extend({
         <hr>
         <div class="panel-content-cards">
           <active-learning-review-card
-            v-for="superpixel, index in value"
+            v-for="superpixel, index in sortSuperpixels(value)"
             :key="index"
             :style="[groupBy === 2 ? {'border': 'none'} : {'border-color': categoryColor(superpixel)}]"
             :superpixel="superpixel"
@@ -177,7 +217,7 @@ export default Vue.extend({
       class="panel-content panel-content-cards"
     >
       <active-learning-review-card
-        v-for="superpixel, index in superpixelsForReview"
+        v-for="superpixel, index in sortSuperpixels(superpixelsForReview)"
         :key="index"
         :style="{'border-color': categoryColor(superpixel)}"
         :superpixel="superpixel"
