@@ -4,7 +4,7 @@ import Vue from 'vue';
 import { store } from '../store';
 
 export default Vue.extend({
-    props: ['superpixel', 'sortValue'],
+    props: ['superpixel', 'previewSize'],
     data() {
         return {
             override: false
@@ -26,8 +26,8 @@ export default Vue.extend({
             const regionWidth = bbox[2] - bbox[0];
             const regionHeight = bbox[3] - bbox[1];
             const scaleFactor = Math.max(regionWidth, regionHeight);
-            const thumbnailWidth = Math.floor(125 * regionWidth / scaleFactor);
-            const thumbnailHeight = Math.floor(125 * regionHeight / scaleFactor);
+            const thumbnailWidth = Math.floor((125 * regionWidth / scaleFactor) * this.previewSize);
+            const thumbnailHeight = Math.floor((125 * regionHeight / scaleFactor) * this.previewSize);
             const params = `?left=${bbox[0]}&top=${bbox[1]}&right=${bbox[2]}&bottom=${bbox[3]}&width=${thumbnailWidth}&height=${thumbnailHeight}`;
             return `${this.apiRoot}/item/${imageId}/tiles/region${params}`;
         },
@@ -40,8 +40,8 @@ export default Vue.extend({
             const regionWidth = bbox[2] - bbox[0];
             const regionHeight = bbox[3] - bbox[1];
             const scaleFactor = Math.max(regionWidth, regionHeight);
-            const thumbnailWidth = Math.floor(125 * regionWidth / scaleFactor);
-            const thumbnailHeight = Math.floor(125 * regionHeight / scaleFactor);
+            const thumbnailWidth = Math.floor((125 * regionWidth / scaleFactor) * this.previewSize);
+            const thumbnailHeight = Math.floor((125 * regionHeight / scaleFactor) * this.previewSize);
             const params = `?left=${bbox[0] / scale}&top=${bbox[1] / scale}&right=${bbox[2] / scale}&bottom=${bbox[3] / scale}&width=${thumbnailWidth}&height=${thumbnailHeight}&encoding=PNG`;
             const functionJson = JSON.stringify({
                 function: {

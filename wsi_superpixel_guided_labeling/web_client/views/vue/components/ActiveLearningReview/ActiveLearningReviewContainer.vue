@@ -15,7 +15,8 @@ export default Vue.extend({
             groupBy: 0,
             sortBy: 0,
             sortSuperpixelBy: 0,
-            filterBy: 0
+            filterBy: 0,
+            previewSize: 0.5
         };
     },
     computed: {
@@ -201,7 +202,17 @@ export default Vue.extend({
             </option>
           </select>
         </div>
-        <div class="col-sm-3" />
+        <div class="col-sm-3">
+          <label for="sizeSlider">Preview Size</label>
+          <input
+            id="sizeSlider"
+            v-model="previewSize"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+          >
+        </div>
         <div class="col-sm-2">
           <label for="superpixel">Superpixel Sort By</label>
           <select
@@ -248,7 +259,7 @@ export default Vue.extend({
             :key="index"
             :style="[groupBy === 2 ? {'border': 'none'} : {'border-color': categoryColor(superpixel)}]"
             :superpixel="superpixel"
-          />
+            :preview-size="parseFloat(previewSize)"
         </div>
       </div>
     </div>
@@ -261,6 +272,7 @@ export default Vue.extend({
         :key="index"
         :style="{'border-color': categoryColor(superpixel)}"
         :superpixel="superpixel"
+        :preview-size="parseFloat(previewSize)"
       />
     </div>
   </div>
