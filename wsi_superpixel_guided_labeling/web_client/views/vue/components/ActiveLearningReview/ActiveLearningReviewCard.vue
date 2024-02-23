@@ -14,6 +14,12 @@ export default Vue.extend({
         apiRoot() {
             return store.apiRoot;
         },
+        imageItemsById() {
+            if (store.backboneParent) {
+                return store.backboneParent.imageItemsById;
+            }
+            return {};
+        },
         wsiRegionUrl() {
             const imageId = this.superpixel.imageId;
             const bbox = this.superpixel.bbox;
@@ -51,13 +57,26 @@ export default Vue.extend({
             });
             const functionParam = `&style=${encodeURIComponent(functionJson)}`;
             return `${this.apiRoot}/item/${imageId}/tiles/region${params}${functionParam}`;
+        },
+        tooltipText() {
+            return (
+                `Confidence: ${this.superpixel.confidence}\n` +
+                `Certainty: ${this.superpixel.certainty}\n` +
+                `Predicted: ${this.superpixel.predictionCategories[this.superpixel.prediction].label}\n` +
+                `Selected: ${this.superpixel.predictionCategories[this.superpixel.selectedCategory].label}\n` +
+                `Slide: ${this.imageItemsById[this.superpixel.imageId].name}`
+            );
         }
     }
 });
 </script>
 
 <template>
-  <div class="h-superpixel-card">
+  <div
+    class="h-superpixel-card"
+    data-toggle="tooltip"
+    :title="tooltipText(superpixel)"
+  >
     <button class="h-superpixel-region-button">
       <img :src="wsiRegionUrl">
       <img
