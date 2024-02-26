@@ -3,11 +3,13 @@ import Vue from 'vue';
 import _ from 'underscore';
 
 import ActiveLearningReviewCard from './ActiveLearningReviewCard.vue';
+import ActiveLearningReviewContext from './ActiveLearningReviewContext.vue';
 import { store } from '../store.js';
 
 export default Vue.extend({
     components: {
-        ActiveLearningReviewCard
+        ActiveLearningReviewCard,
+        ActiveLearningReviewContext
     },
     data() {
         return {
@@ -16,7 +18,9 @@ export default Vue.extend({
             sortBy: 0,
             sortSuperpixelBy: 0,
             filterBy: 0,
-            previewSize: 0.5
+            previewSize: 0.5,
+            viewerWidget: null,
+            selectedSuperpixel: null
         };
     },
     computed: {
@@ -139,6 +143,10 @@ export default Vue.extend({
 
 <template>
   <div class="panel panel-info">
+    <active-learning-review-context
+      id="context"
+      :superpixel="selectedSuperpixel"
+    />
     <div class="panel-heading">
       <div class="h-inputs row">
         <div class="col-sm-2">
@@ -260,6 +268,10 @@ export default Vue.extend({
             :style="[groupBy === 2 ? {'border': 'none'} : {'border-color': categoryColor(superpixel)}]"
             :superpixel="superpixel"
             :preview-size="parseFloat(previewSize)"
+            data-toggle="modal"
+            data-target="#context"
+            @click.native="selectedSuperpixel = superpixel"
+          />
         </div>
       </div>
     </div>
@@ -273,6 +285,9 @@ export default Vue.extend({
         :style="{'border-color': categoryColor(superpixel)}"
         :superpixel="superpixel"
         :preview-size="parseFloat(previewSize)"
+        data-toggle="modal"
+        data-target="#context"
+        @click.native="selectedSuperpixel = superpixel"
       />
     </div>
   </div>

@@ -75,7 +75,7 @@ export default Vue.extend({
   <div
     class="h-superpixel-card"
     data-toggle="tooltip"
-    :title="tooltipText(superpixel)"
+    :title="tooltipText"
   >
     <button class="h-superpixel-region-button">
       <img :src="wsiRegionUrl">
