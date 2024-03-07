@@ -28,6 +28,9 @@ export default Vue.extend({
         },
         annotationsByImageId() {
             return store.annotationsByImageId;
+        },
+        imageItemsById() {
+            return store.backboneParent.imageItemsById;
         }
     },
     watch: {
@@ -144,7 +147,7 @@ export default Vue.extend({
                 <tbody>
                   <tr>
                     <td>Slide</td>
-                    <td>{{ superpixel.imageId }}</td>
+                    <td>{{ imageItemsById[superpixel.imageId].name }}</td>
                   </tr>
                   <tr>
                     <td>Prediction</td>
