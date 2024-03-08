@@ -26,6 +26,9 @@ export default Vue.extend({
         };
     },
     computed: {
+        backboneParent() {
+            return store.backboneParent;
+        },
         predictionsData() {
             if (store.backboneParent) {
                 return store.backboneParent.superpixelPredictionsData;
@@ -170,6 +173,9 @@ export default Vue.extend({
         },
         categoryColor(superpixel) {
             return this.categories[superpixel.selectedCategory].fillColor;
+        },
+        triggerRetrain() {
+            this.backboneParent.retrain();
         }
     }
 });
@@ -339,7 +345,10 @@ export default Vue.extend({
           </select>
         </div>
         <div class="h-form-buttons col-sm-1">
-          <button class="btn btn-primary btn-sm btn-block">
+          <button
+            class="btn btn-primary btn-sm btn-block"
+            @click="triggerRetrain"
+          >
             Retrain
           </button>
         </div>
