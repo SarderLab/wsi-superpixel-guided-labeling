@@ -10,6 +10,7 @@ import { store, updatePixelmapLayerStyle } from './store.js';
 import { getFillColor } from './utils.js';
 
 export default Vue.extend({
+    props: ['availableImages'],
     data() {
         return {
             hasLoaded: false,
@@ -111,6 +112,14 @@ export default Vue.extend({
                 this.drawPixelmapAnnotation();
             },
             deep: true
+        },
+        availableImages(newAvail, oldAvail) {
+            const newImage = _.difference(newAvail, oldAvail)[0];
+            if (newImage === store.currentImageId) {
+                // Update image with annotations
+                this.superpixelAnnotation = store.annotationsByImageId[store.currentImageId].labels;
+                this.setupViewer();
+            }
         }
     },
     mounted() {
@@ -248,11 +257,6 @@ export default Vue.extend({
          * Parse existing label annotations to populate the categories used for labeling.
          */
         createCategories() {
-            const cats = _.chain([...this.categoryMap.values()])
-                .filter((cat) => cat.label !== 'default')
-                .map((category) => { return { category, indices: {} }; })
-                .value();
-            this.categories = _.uniq([...cats, ...this.categories], (cat) => cat.category.label);
             // TODO handle missing default, default in wrong position
             _.forEach(Object.entries(store.annotationsByImageId), ([imageId, annotations]) => {
                 if (_.has(annotations, 'labels')) {

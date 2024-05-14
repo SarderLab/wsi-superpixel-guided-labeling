@@ -211,21 +211,15 @@ const ActiveLearningView = View.extend({
             this.vueComponentChanged();
         }
     },
+
     vueComponentChanged() {
         if (this.vueApp) {
-            // The app component exists
-            const elId = this.vueApp.$el.id;
-            if (
-                (this.activeLearningStep <= 1 && elId === 'setupContainer') ||
-                (this.activeLearningStep > 1 && elId === 'learningContainer')
-            ) {
-                // We alreay have the correct component mounted, no need to
-                // re-create it. Just update the props.
-                return this.updateVueComponent();
-            }
+            // We have alreay mounted the component, no need to re-create it. Just update the props.
+            return this.updateVueComponent();
         }
         return this.mountVueComponent();
     },
+
     updateVueComponent() {
         const exceptions = ['router', 'apiRoot', 'trainingDataFolderId', 'backboneParent'];
         _.forEach(Object.keys(this.vueApp.$props), (prop) => {
@@ -268,6 +262,7 @@ const ActiveLearningView = View.extend({
                     certaintyMetrics: this.certaintyMetrics,
                     apiRoot: getApiRoot(),
                     currentAverageCertainty: this.currentAverageCertainty,
+                    availableImages: this.availableImages,
                     categoryMap: this.categoryMap
                 }
             });
